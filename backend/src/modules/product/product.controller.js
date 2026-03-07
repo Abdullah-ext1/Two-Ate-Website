@@ -1,7 +1,7 @@
-import { asyncHandler } from "../../utils/asyncHandler";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 import { Product } from "./product.model.js";
-import ApiError from "../../utils/apiError";
-import { ApiResponse } from "../../utils/apiResponce";
+import ApiError from "../../utils/apiError.js";
+import { ApiResponse } from "../../utils/apiResponce.js";
 
 const createProduct = asyncHandler(async (req , res) => {
     const {name , description , price , category , sizes , color , images , discountedPrice} = req.body
@@ -17,8 +17,8 @@ const createProduct = asyncHandler(async (req , res) => {
         price,
         category,
         sizes,
-        color,
         images,
+        color,
         discountedPrice,
         createdBy : req.user._id
     })
