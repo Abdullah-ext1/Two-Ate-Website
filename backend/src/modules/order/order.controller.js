@@ -1,21 +1,20 @@
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/apiError.js";
 import { ApiResponse } from "../../utils/apiResponce.js";
-import { Cart } from "./cart.models.js";
+import { Cart } from "../cart/cart.models.js";
 import { Order } from "./order.model.js";
-import { populate } from "dotenv";
 
 const create = asyncHandler(async (req, res) => {
 
     const cart = await Cart.findOne({ user: req.user._id })
-    if (!cart || cart.item.length === 0) {
+    if (!cart || cart.items.length === 0) {
         throw new ApiError(400, "Cart is Empty")
     }
 
     let totalAmount = 0
 
     cart.items.forEach(item => {
-        totalAmount += item.priceSnapahot * item.quantity
+        totalAmount += item.priceSnapshot * item.quantity
     });
 
     const order = await Order.create({

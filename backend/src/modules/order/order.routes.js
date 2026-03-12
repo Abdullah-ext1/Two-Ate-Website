@@ -4,7 +4,7 @@ import {
     getMyOrder,
     getSingleOrder,
     orderStatus
-} from "./order.controller";
+} from "./order.controller.js";
 import { verifyJWT } from "../../middleware/auth.middleware.js"
 import { verifyAdmin } from "../../middleware/verifyadmin.middleware.js";
 
