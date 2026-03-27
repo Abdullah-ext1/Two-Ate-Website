@@ -6,3 +6,5 @@ export const verifyAdmin = (req, res, next) => {
 
   next()
 }
+
+//for admin verification so that user cannot acces
