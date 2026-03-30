@@ -28,11 +28,11 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 //Register User
 
-const registerUser = async (req , res) => {
+const registerUser = asyncHandler(async (req , res) => {
 
-    const {fullName , email , password} = req.body
+    const {name , email , password} = req.body
     if(
-        [fullName , email , password].some((feild) => feild?.trim() === "" )
+        [name , email , password].some((feild) => feild?.trim() === "" )
     ){
         throw new ApiError(400 , "All Feilds Are Required")
     }
@@ -51,7 +51,7 @@ const registerUser = async (req , res) => {
     }
 
     const user = await User.create({
-        fullName,
+        fullName: name,
         email,
         password
     })
@@ -69,15 +69,15 @@ const registerUser = async (req , res) => {
     return res.status(201).json(
         new ApiResponse(
             200,
-            {createdUser},
+            {user: createdUser},
             "User Created Successfully"
         )
     )
 
-}
+})
 
 //Login
-    const loginUser = async(req , res) => {
+    const loginUser = asyncHandler(async(req , res) => {
         const {fullName , email , password } = req.body
     
         if(!(password || email)){
@@ -116,7 +116,7 @@ const registerUser = async (req , res) => {
                 "User Loggedin Successfully"
             )
         )
-}
+})
 
 //Logout
 

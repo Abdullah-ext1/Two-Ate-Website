@@ -26,7 +26,7 @@ const addToCart = asyncHandler(async (req , res) => {
     
     let cart = await Cart.findOne({user : req.user._id})
     if (!cart) {
-       const userCart = await Cart.create({
+       cart = await Cart.create({
         user: req.user._id,
         items: [{
             product: productId,
@@ -35,6 +35,15 @@ const addToCart = asyncHandler(async (req , res) => {
             priceSnapshot:product.price
         }]
        })
+       return res
+       .status(200)
+       .json(
+           new ApiResponse(
+               200,
+               {cart, totalPrice: product.price * quantity, totalItems: quantity},
+               "Item added to cart successfully"
+           )
+       )
     }
 
     //Which array method can find the position of an item in array? : : findIndex()
@@ -54,12 +63,20 @@ const addToCart = asyncHandler(async (req , res) => {
     }
 
     await cart.save()
+    
+    let totalPrice = 0
+    let totalItems = 0
+    cart.items.forEach(item => {
+        totalPrice += item.priceSnapshot * item.quantity
+        totalItems += item.quantity
+    })
+    
     return res
     .status(200)
     .json(
         new ApiResponse(
             200,
-            cart,
+            {cart, totalPrice, totalItems},
             "Item added to cart successfully"
         )
     )

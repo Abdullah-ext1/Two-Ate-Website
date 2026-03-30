@@ -19,7 +19,7 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: [true, "Password is required"],
-        minlength: 8,
+        minlength: 6,
         trim: true,
         select: false //this feild excluded when fetch user
     },
