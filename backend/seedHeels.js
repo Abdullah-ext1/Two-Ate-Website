@@ -24,7 +24,17 @@ for (const heel of heelsData) {
         .expression(`folder:${heel.folder}`)
         .execute()
 
-    const imageUrls = images.resources.map(img => img.secure_url)
+    // Sort images by filename in ascending order (first to last)
+    // Extract the image number that comes BEFORE the underscore
+    const sortedResources = images.resources.sort((a, b) => {
+        const aName = a.public_id.split('/').pop() // Get basename (e.g., "img1_odegf4")
+        const bName = b.public_id.split('/').pop()
+        const aNum = parseInt(aName.split('_')[0].match(/\d+/)?.[0] || 0)
+        const bNum = parseInt(bName.split('_')[0].match(/\d+/)?.[0] || 0)
+        return aNum - bNum
+    })
+
+    const imageUrls = sortedResources.map(img => img.secure_url)
 
     await Product.create({
         name: heel.name,
