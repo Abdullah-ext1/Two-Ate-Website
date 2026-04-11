@@ -26,21 +26,24 @@ const addToCart = asyncHandler(async (req , res) => {
     
     let cart = await Cart.findOne({user : req.user._id})
     if (!cart) {
+       const priceToUse = product.discountedPrice || product.price
        cart = await Cart.create({
         user: req.user._id,
         items: [{
             product: productId,
             size,
             quantity,
-            priceSnapshot:product.price
+            priceSnapshot: priceToUse
         }]
        })
+       // Populate product details before returning
+       await cart.populate("items.product")
        return res
        .status(200)
        .json(
            new ApiResponse(
                200,
-               {cart, totalPrice: product.price * quantity, totalItems: quantity},
+               {cart, totalPrice: priceToUse * quantity, totalItems: quantity},
                "Item added to cart successfully"
            )
        )
@@ -58,11 +61,14 @@ const addToCart = asyncHandler(async (req , res) => {
             product: productId,
             size,
             quantity,
-            priceSnapshot:product.price
+            priceSnapshot: product.discountedPrice || product.price
         })
     }
 
     await cart.save()
+    
+    // Populate product details before returning
+    await cart.populate("items.product")
     
     let totalPrice = 0
     let totalItems = 0
@@ -137,17 +143,26 @@ const updateCart = asyncHandler(async (req , res) => {
     }   
     item.quantity = quantity
     await cart.save()
-        return res      
+    
+    // Populate product details before returning
+    await cart.populate("items.product")
+    
+    let totalPrice = 0
+    let totalItems = 0
+    cart.items.forEach(item => {
+        totalPrice += item.priceSnapshot * item.quantity
+        totalItems += item.quantity
+    })
+    
+    return res      
         .status(200)
         .json(
             new ApiResponse(
                 200,
-                cart,
+                {cart, totalPrice, totalItems},
                 "Cart updated successfully"
             )
         )
-    
-
 })
 
 const removeItem = asyncHandler(async (req , res) => {
@@ -159,19 +174,29 @@ const removeItem = asyncHandler(async (req , res) => {
             throw new ApiError(404 , "cart not Found")
         }   
         
-        const item = cart.items.find(item => item._id === itemId)
+        const item = cart.items.find(item => item._id.toString() === itemId)
         if (!item) {
             throw new ApiError(404 , "Item not Found In cart")
         }
         cart.items.pull(itemId)
         await cart.save()
+        
+        // Populate product details before returning
+        await cart.populate("items.product")
+        
+        let totalPrice = 0
+        let totalItems = 0
+        cart.items.forEach(item => {
+            totalPrice += item.priceSnapshot * item.quantity
+            totalItems += item.quantity
+        })
 
         return res
         .status(200)
         .json(
             new ApiResponse(
                 200,
-                {cart},
+                {cart, totalPrice, totalItems},
                 "Cart Updated SuccessFully"
             )
         )
@@ -186,6 +211,9 @@ const deletecart = asyncHandler(async (req , res) => {
     }
     cart.items = []
     await cart.save()
+    
+    // Populate product details (will be empty since we cleared items)
+    await cart.populate("items.product")
 
     return res
     .status(200)
